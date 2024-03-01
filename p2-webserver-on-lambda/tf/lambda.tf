@@ -1,19 +1,60 @@
+########################################################################################################################
+# BUILD
+########################################################################################################################
+locals {
+  binary_path  = "${path.module}/../bin/bootstrap"
+  archive_path = "${path.module}/../bin/lambda.zip"
+  src_path     = "${path.module}/../cmd/lambda.go"
+}
 
+// build the binary for the lambda function in a specified path
+resource "null_resource" "function_binary" {
+  triggers = {
+    always_run = "${timestamp()}"
+  }
+
+  provisioner "local-exec" {
+    command = "GOOS=linux GOARCH=arm64 CGO_ENABLED=0 GOFLAGS=-trimpath go build -mod=readonly -ldflags='-s -w' -o ${local.binary_path} ${local.src_path}"
+  }
+}
+
+// zip the binary, as we can use only zip files to AWS lambda
+data "archive_file" "function_archive" {
+  depends_on = [null_resource.function_binary]
+
+  type        = "zip"
+  source_file = local.binary_path
+  output_path = local.archive_path
+}
+
+########################################################################################################################
+# LAMBDA DEFINITIONS
+########################################################################################################################
 resource "aws_lambda_function" "simple_webserver" {
-  function_name = "simple_webserver"
+  function_name = var.super_secret_name
   description   = "A simple example webserver deployed to lambda, that reads / writes data to dynamo"
   role          = aws_iam_role.simple_webserver.arn
 
-  architectures = ["arm64"] # Runs on aws graviton, which is faster, cheaper, and more environmentally friendly
-  runtime       = "provided.al2023"
-  handler       = "bootstrap"
-  filename      = "${path.module}/../bin/bootstrap.zip"
+  architectures    = ["arm64"] # Runs on aws graviton, which is faster, cheaper, and more environmentally friendly
+  runtime          = "provided.al2023"
+  handler          = "bootstrap"
+  filename         = local.archive_path
+  source_code_hash = data.archive_file.function_archive.output_base64sha256
 }
 
 # Define a url for lambda to send / recieve requests from
-resource "aws_lambda_function_url" "test_latest" {
+resource "aws_lambda_function_url" "public_endpoint" {
   function_name      = aws_lambda_function.simple_webserver.function_name
   authorization_type = "NONE"
+
+  cors {
+    allow_credentials = true
+    allow_origins     = ["*"]
+    allow_methods     = ["*"]
+    allow_headers     = ["date", "keep-alive"]
+    expose_headers    = ["keep-alive", "date"]
+    max_age           = 86400
+  }
 }
 
 # Stores logs for the function for 2 weeks
@@ -72,7 +113,6 @@ data "aws_iam_policy_document" "lambda_logging" {
 # Create a basic policy for logging from a lambda using the definition above
 resource "aws_iam_policy" "lambda_logging" {
   name        = "lambda_logging"
-  path        = "/"
   description = "IAM policy for logging from a lambda"
   policy      = data.aws_iam_policy_document.lambda_logging.json
 }

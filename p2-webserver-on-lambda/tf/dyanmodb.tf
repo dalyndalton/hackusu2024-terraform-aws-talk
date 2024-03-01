@@ -2,17 +2,12 @@ resource "aws_dynamodb_table" "storage_table" {
   name         = "simple_webserver_storage"
   billing_mode = "PAY_PER_REQUEST"
 
+
   hash_key  = "IPAddress"
-  range_key = "VisitCount"
 
   attribute {
     name = "IPAddress"
     type = "S"
-  }
-
-  attribute {
-    name = "VisitCount"
-    type = "N"
   }
 }
 

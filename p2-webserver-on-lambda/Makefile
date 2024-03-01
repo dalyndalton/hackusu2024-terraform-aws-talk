@@ -3,19 +3,18 @@
 # The binary to build (just the basename).
 BIN=bootstrap
 ARCH=arm64
-VERSION?=1.0.0
 
 # Lambda function name
 FUNCTION_NAME=simple_webserver
 
 # Output directory
-OUT_DIR=./bin
+OUT_DIR=entrypoint
 ZIP_FILE=$(OUT_DIR)/$(BIN).zip
 
 .PHONY: build
 build:
 	@echo "Building $(BIN) version $(VERSION)"
-	GOOS=linux GOARCH=$(ARCH) go build -o $(OUT_DIR)/$(BIN) ./cmd/lambda.go
+	GOOS=linux GOARCH=$(ARCH) go build -tags lambda.norpc -o $(OUT_DIR)/$(BIN) ./cmd/lambda.go
 	@echo "Build complete"
 
 .PHONY: package
@@ -32,5 +31,5 @@ clean:
 .PHONY: deploy
 deploy: package
 	@echo "Uploading $(ZIP_FILE) to AWS Lambda $(FUNCTION_NAME)"
-	@aws lambda update-function-code --function-name $(FUNCTION_NAME) --zip-file fileb://$(ZIP_FILE)
+	aws lambda update-function-code --function-name $(FUNCTION_NAME) --zip-file fileb://$(ZIP_FILE)
 	@echo "Deploy complete"
