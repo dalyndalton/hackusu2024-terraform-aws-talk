@@ -2,6 +2,7 @@ provider "aws" {
   region = "us-east-1" # CloudWatch billing metrics are only available in us-east-1
 }
 
+# Dont worry about this
 terraform {
   backend "s3" {
     bucket = "dx2-tf-state"
@@ -10,6 +11,7 @@ terraform {
   }
 }
 
+# We need an email to alert on, thats this value
 variable "email_address" {
   type = string
 }
@@ -30,6 +32,36 @@ resource "aws_budgets_budget" "monthly" {
     subscriber_sns_topic_arns  = [aws_sns_topic.billing_alerts.arn]
   }
 }
+
+### DONT LOOK DOWN HERE ITS NOT NEEDED
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 resource "aws_sns_topic" "billing_alerts" {
   name = "billing-alerts"

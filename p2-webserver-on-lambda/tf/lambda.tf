@@ -30,12 +30,13 @@ data "archive_file" "function_archive" {
 ########################################################################################################################
 # LAMBDA DEFINITIONS
 ########################################################################################################################
+
 resource "aws_lambda_function" "simple_webserver" {
   function_name = var.super_secret_name
   description   = "A simple example webserver deployed to lambda, that reads / writes data to dynamo"
   role          = aws_iam_role.simple_webserver.arn
 
-  architectures    = ["arm64"] # Runs on aws graviton, which is faster, cheaper, and more environmentally friendly
+  architectures    = ["arm64"] # Runs on aws graviton, which is faster, cheaper, and cooler 😎
   runtime          = "provided.al2023"
   handler          = "bootstrap"
   filename         = local.archive_path
