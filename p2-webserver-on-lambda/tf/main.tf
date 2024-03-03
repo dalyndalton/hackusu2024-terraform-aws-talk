@@ -21,9 +21,6 @@ terraform {
   }
 }
 
-terraform {
-
-}
 
 variable "super_secret_name" {
   type = string

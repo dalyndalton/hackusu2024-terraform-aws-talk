@@ -32,7 +32,7 @@ data "archive_file" "function_archive" {
 ########################################################################################################################
 
 resource "aws_lambda_function" "simple_webserver" {
-  function_name = var.super_secret_name
+  function_name = "${var.super_secret_name}_the_second"
   description   = "A simple example webserver deployed to lambda, that reads / writes data to dynamo"
   role          = aws_iam_role.simple_webserver.arn
 

@@ -13,7 +13,6 @@ resource "aws_dynamodb_table" "storage_table" {
   }
 }
 
-
 # Tells aws how and what permissions you have on the resource
 data "aws_iam_policy_document" "dynamodb_access" {
   statement {

@@ -12,7 +12,7 @@ terraform {
 }
 
 locals {
-  lambda_names = [for i in range(1, 21) : format("lambda-%02d", i)]
+  lambda_names = [for i in range(1, 26) : format("lambda-%02d", i)]
 }
 
 
